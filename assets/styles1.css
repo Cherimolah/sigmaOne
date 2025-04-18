@@ -1,0 +1,92 @@
+.root {
+  display: flex;
+}
+
+.table {
+  display: flex;
+  flex-direction: column;
+  background-image: url("table.jpg");
+  width: 1100px;
+  height: 650px;
+  justify-content: space-between;
+}
+
+.top-level,
+.bottom-level {
+  display: flex;
+}
+
+.mid-level{
+  display: flex;
+  justify-content: space-between;
+}
+
+.arrow {
+  align-self: flex-start;
+}
+
+.hand {
+  margin: auto;
+}
+
+.setup {
+    display: block;
+    position: relative;
+    margin: auto;
+    text-align: center;
+}
+.deck-all {
+  margin: auto;
+}
+
+.deck {
+    margin-left: 0;
+}
+
+.bat {
+  margin-right: 0;
+}
+
+.cards{
+    display: flex;
+    flex-direction: column;
+}
+.count {
+    display: flex;
+    flex-direction: column;
+}
+
+.trump-card{
+    rotate: 90deg;
+    width: 90px;
+    height: 120px;
+}
+
+.back {
+    background-image: url("cards/back.jpg");
+    width: 90px;
+    height: 120px;
+    position: absolute;
+}
+
+.start-button{
+    display: block;
+    padding: 15px;
+}
+
+.setup-buttons{
+    display: none;
+    padding: 15px;
+}
+
+button{
+    padding: 10px;
+}
+
+form{
+    padding: 10px;
+}
+
+table {
+  border-collapse: collapse;
+}
