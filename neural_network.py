@@ -11,7 +11,7 @@ class Network(nn.Module):
             nn.Linear(387, 256), nn.ReLU(),
             nn.Linear(256, 128), nn.ReLU(),
             nn.Linear(128, 64), nn.ReLU(),
-            nn.Linear(64, 76), nn.Sigmoid()
+            nn.Linear(64, 76), nn.Softmax(dim=-1)
         )
         self.id = id
 

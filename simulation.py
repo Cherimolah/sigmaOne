@@ -202,7 +202,6 @@ def test(model, prev) -> int:
 def train():
     models = [Network() for _ in range(MODELS_COUNT - 1)]
     top_model = Network()
-    top_model.load_state_dict(torch.load('model_weights1.pth'))
     models.append(top_model)
     for i in range(EPOCHS):
         scores = [0] * MODELS_COUNT
