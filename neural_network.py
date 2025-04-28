@@ -1,7 +1,11 @@
 import copy
+from typing import List, Union
 
 import torch
 import torch.nn as nn
+from torch.nn import functional as F
+
+from environment import State, Action, IllegalStep, convert_id_to_action, parse_state, ActionType, Environment
 
 
 class Network(nn.Module):
@@ -11,15 +15,59 @@ class Network(nn.Module):
             nn.Linear(387, 256), nn.ReLU(),
             nn.Linear(256, 128), nn.ReLU(),
             nn.Linear(128, 64), nn.ReLU(),
-            nn.Linear(64, 76), nn.Sigmoid()
+            nn.Linear(64, 76)
         )
-        self.id = id
+
+    def forward(self, x: State):
+        tensor = prepare_state(x)
+        logits = self.linear(tensor)
+        mask = [0] * len(logits)
+        mask = torch.tensor(mask, dtype=torch.bool)
+        named_actions: List[Action] = []
+        for i, logit in enumerate(logits):
+            named_actions.append(convert_id_to_action(i))
+        for i, action in enumerate(named_actions):
+            state = copy.deepcopy(x)
+            if state.step == 0:
+                if action.type not in (ActionType.ATTACK, ActionType.STOP_ATTACK, ActionType.BAT, ActionType.PASS):
+                    mask[i] = False
+                    continue
+            else:
+                if action.type not in (ActionType.DEFEND, ActionType.TAKE, ActionType.TRANSFER):
+                    mask[i] = False
+                    continue
+            try:
+                state.next_step(action)
+                mask[i] = True
+            except IllegalStep:
+                mask[i] = False
+        masked_logits = logits.masked_fill(~mask, float('-inf'))
+        probs = F.softmax(masked_logits, dim=-1)
+        mask = torch.tensor([x > 0 for x in probs], dtype=torch.bool)
+        masked_probs = probs.masked_fill(~mask, 1e-8)
+        return masked_probs
+
+
+class Critic(nn.Module):
+    def __init__(self):
+        super(Critic, self).__init__()
+        self.linear = nn.Sequential(
+            nn.Linear(387, 256), nn.ReLU(),
+            nn.Linear(256, 128), nn.ReLU(),
+            nn.Linear(128, 64), nn.ReLU(),
+            nn.Linear(64, 32), nn.ReLU(),
+            nn.Linear(32, 16), nn.ReLU(),
+            nn.Linear(16, 8), nn.ReLU(),
+            nn.Linear(8, 4), nn.ReLU(),
+            nn.Linear(4, 2), nn.ReLU(),
+            nn.Linear(2, 1), nn.Tanh()
+        )
 
     def forward(self, x):
         return self.linear(x)
 
 
-def crossover_and_mutate(parent1, parent2, mutation_rate=0.1, mutation_scale=0.05):
+def crossover_and_mutate(parent1, parent2, mutation_rate=0.5, mutation_scale=0.3):
     """
     Создает новую модель путем кроссовера и мутации двух родительских моделей.
 
@@ -60,7 +108,7 @@ def crossover_and_mutate(parent1, parent2, mutation_rate=0.1, mutation_scale=0.0
     return child
 
 
-def mutate_weights(model, mutation_rate=0.1, mutation_scale=0.05):
+def mutate_weights(model, mutation_rate=0.5, mutation_scale=0.5):
     """
     Мутирует веса модели, добавляя случайный шум.
 
@@ -78,3 +126,11 @@ def mutate_weights(model, mutation_rate=0.1, mutation_scale=0.05):
                 noise = torch.randn_like(param) * mutation_scale
                 param[mask] += noise[mask]
     return model
+
+
+def prepare_state(state: "State") -> torch.Tensor:
+    """
+    Преобразует стейт в тензор для нейронки
+    """
+    pre_state = parse_state(state)
+    return torch.tensor(pre_state, dtype=torch.float, requires_grad=True)

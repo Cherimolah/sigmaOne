@@ -116,7 +116,7 @@ class State:
             offset = 2
         self.offset = offset
         self.ended = False
-        self.winner = None
+        self.winner: Optional[int] = None
         self.player_take_mode = False
         self.opponent_take_mode = False
         self.max_card_desk = 5
@@ -295,9 +295,11 @@ class State:
         if self.step == 0:
             hand = self.opponent_cards
             opposite_hand = self.player_cards
+            self.player_known_cards.discard(card)
         else:
             hand = self.player_cards
             opposite_hand = self.opponent_cards
+            self.opponent_known_cards.discard(card)
 
         if card not in hand:
             raise IllegalStep('Card must be in hand')
@@ -334,6 +336,12 @@ class State:
             state.step = Step(1)
         else:
             state.step = Step(0)
+        if self.player_take_mode:
+            state.opponent_take_mode = True
+            state.player_take_mode = False
+        elif self.opponent_take_mode:
+            state.player_take_mode = True
+            state.opponent_take_mode = False
         return state
 
     def stop_attack(self):
@@ -360,6 +368,12 @@ class State:
         elif action.type == ActionType.STOP_ATTACK:
             self.stop_attack()
 
+    def __str__(self):
+        return (f'Player cards = {self.player_cards}, opponent cards = {self.opponent_cards}, trump = {self.trump}, desk = {self.desk}, '
+                f'step = {self.step}, deck = {self.deck}, player take mode = {self.player_take_mode}, '
+                f'opponent take mode = {self.opponent_take_mode}, player known cards = {self.player_known_cards}, '
+                f'opponent known cards = {self.opponent_known_cards}')
+
 
 class Environment:
 
@@ -371,3 +385,79 @@ class Environment:
         self.state = State(self.state.deck_size, self.state.transferable)
         self.state.load_cards()
         self.state.load_first_step()
+
+
+def convert_id_to_action(i: int) -> Action:
+    if 23 >= i >= 0:
+        return Action(ActionType.ATTACK, Card(i, 9))
+    elif 24 <= i <= 47:
+        return Action(ActionType.DEFEND, Card(i - 24, 9))
+    elif 48 <= i <= 71:
+        return Action(ActionType.TRANSFER, Card(i - 48, 9))
+    elif i == 72:
+        return Action(ActionType.BAT)
+    elif i == 73:
+        return Action(ActionType.TAKE)
+    elif i == 74:
+        return Action(ActionType.PASS)
+    elif i == 75:
+        return Action(ActionType.STOP_ATTACK)
+
+
+def convert_action_to_id(action: Action) -> int:
+    if action.type == ActionType.ATTACK:
+        return action.card.id
+    if action.type == ActionType.DEFEND:
+        return 24 + action.card.id
+    if action.type == ActionType.TRANSFER:
+        return 48 + action.card.id
+    if action.type == ActionType.BAT:
+        return 72
+    if action.type == ActionType.TAKE:
+        return 73
+    if action.type == ActionType.PASS:
+        return 74
+    if action.type == ActionType.STOP_ATTACK:
+        return 75
+
+
+def parse_state(state: State) -> List[float]:
+    all_cards = {Card(x, 9) for x in list(range(24))}
+    pre_state: List[float] = [0] * 387
+
+    # Карты свои
+    for card in state.player_cards:
+        pre_state[card.id + 24 * 0] = 1
+
+    # Карты соперника (известные)
+    for card in state.player_known_cards:
+        pre_state[card.id + 24] = 1
+
+    # Колода и карты соерника (вероятности)
+    unknown_cards = all_cards - state.player_cards - state.player_known_cards - {state.trump} - state.bat
+    if unknown_cards:
+        probability_hand = (len(state.opponent_cards) - len(state.player_known_cards)) / len(unknown_cards)
+        for card in list(unknown_cards):
+            pre_state[card.id + 24 * 1] = probability_hand
+            pre_state[card.id + 24 * 2] = 1 - probability_hand
+
+    # Козырь
+    pre_state[state.trump.id + 24 * 3] = 1
+
+    # Бито
+    for card in state.bat:
+        pre_state[card.id + 24 * 4] = 1
+
+    # Стол
+    for i, card in enumerate(state.desk[0]):
+        pre_state[card.id + 24 * (5 + i)] = 1
+    for i, card in enumerate(state.desk[1]):
+        if card:
+            pre_state[card.id + 24 * (11 + i)] = 1
+
+    if state.step == 0:
+        pre_state[-3] = 1  # Атака
+    else:
+        pre_state[-2] = 1  # Защита
+    pre_state[-1] = int(state.opponent_take_mode)  # Берет ли соперник (take_mode)
+    return pre_state
