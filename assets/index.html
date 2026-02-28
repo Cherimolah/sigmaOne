@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SigmaOne - ИИ для игры в дурака</title>
+    <link rel="stylesheet" href="/assets/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Экран приветствия -->
+    <div id="welcome-screen" class="screen active">
+        <div class="welcome-container">
+            <div class="logo">
+                <i class="fas fa-robot"></i>
+                <h1>SigmaOne</h1>
+            </div>
+            <div class="welcome-content">
+                <h2>Добро пожаловать в ИИ-движок для игры в дурака!</h2>
+                <p class="description">
+                    SigmaOne - это продвинутый искусственный интеллект, созданный для игры в переводного дурака.
+                    <br>Используется колода из 24 карт (от 9 до туза).
+                </p>
+                <div class="game-info">
+                    <div class="info-card">
+                        <i class="fas fa-exchange-alt"></i>
+                        <h3>Переводной дурак</h3>
+                        <p>Возможность переводить карты сопернику</p>
+                    </div>
+                    <div class="info-card">
+                        <i class="fas fa-brain"></i>
+                        <h3>Искусственный интеллект</h3>
+                        <p>Продвинутый алгоритм принятия решений</p>
+                    </div>
+                    <div class="info-card">
+                        <i class="fas fa-gamepad"></i>
+                        <h3>24 карты</h3>
+                        <p>Колода от 9 до туза</p>
+                    </div>
+                </div>
+                <button id="start-game" class="btn-primary">
+                    <i class="fas fa-play"></i> Начать игру
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Игровой стол -->
+    <div id="game-screen" class="screen">
+        <!-- Загрузочный экран -->
+        <div id="loading-overlay" class="overlay hidden">
+            <div class="loading-content">
+                <div class="spinner"></div>
+                <h3>ИИ думает...</h3>
+                <div class="progress-container">
+                    <div class="progress-bar" id="progress-bar"></div>
+                </div>
+                <p id="progress-text">Попытка 1 из 100</p>
+            </div>
+        </div>
+
+        <!-- Игровой интерфейс -->
+        <div class="game-container">
+            <!-- Верхняя панель -->
+            <div class="top-panel">
+                <div class="player-info opponent-info">
+                    <div class="avatar">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <div class="info">
+                        <h3>SigmaOne AI</h3>
+                        <div class="card-count" id="ai-card-count">6 карт</div>
+                    </div>
+                </div>
+
+                <div class="deck-area">
+                    <div class="deck-container">
+                        <div class="trump-card" id="trump-card">
+                            <!-- Козырная карта/эмодзи -->
+                        </div>
+                        <div class="deck-count" id="deck-count">24</div>
+                    </div>
+                    <div class="bat-pile" id="bat-pile">
+                        <!-- Бито -->
+                    </div>
+                </div>
+
+                <div class="game-controls">
+                    <button id="surrender-btn" class="btn-secondary">
+                        <i class="fas fa-flag"></i> Сдаться
+                    </button>
+                    <button id="new-game-btn" class="btn-secondary">
+                        <i class="fas fa-redo"></i> Новая игра
+                    </button>
+                </div>
+            </div>
+
+            <!-- Игровой стол -->
+            <div class="table">
+                <div class="desk-grid" id="desk-grid">
+                    <!-- 3x2 сетка для карт на столе -->
+                    <div class="desk-cell" data-index="0"></div>
+                    <div class="desk-cell" data-index="1"></div>
+                    <div class="desk-cell" data-index="2"></div>
+                    <div class="desk-cell" data-index="3"></div>
+                    <div class="desk-cell" data-index="4"></div>
+                    <div class="desk-cell" data-index="5"></div>
+                </div>
+            </div>
+
+            <!-- Нижняя панель -->
+            <div class="bottom-panel">
+                <div class="player-info player-info-bottom">
+                    <div class="avatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="info">
+                        <h3>Игрок</h3>
+                        <div class="card-count" id="player-card-count">6 карт</div>
+                    </div>
+                </div>
+
+                <div class="hand-container" id="hand-container">
+                    <!-- Карты игрока -->
+                </div>
+
+                <div class="action-buttons">
+                    <button id="action-btn" class="btn-primary hidden">
+                        <!-- Динамическая кнопка действия -->
+                    </button>
+                    <button id="transfer-btn" class="btn-secondary hidden">
+                        <i class="fas fa-exchange-alt"></i> Перевести
+                    </button>
+                    <button id="defend-btn" class="btn-secondary hidden">
+                        <i class="fas fa-shield-alt"></i> Отбить
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/assets/state.js"></script>
+    <script src="/assets/script.js"></script>
+</body>
+</html>
