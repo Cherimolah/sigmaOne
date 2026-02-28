@@ -116,6 +116,7 @@ class Network(nn.Module):
     def __init__(self):
         super(Network, self).__init__()
 
+
         self.embedding = nn.Embedding(num_embeddings=24, embedding_dim=16)
 
         self.player_hand_trump = AttentionModule()
@@ -140,6 +141,7 @@ class Network(nn.Module):
             nn.Linear(128, 32), nn.ReLU(),
             nn.Linear(32, 1), nn.Tanh()
         )
+
 
 
 
