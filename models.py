@@ -8,9 +8,9 @@ class StateModel(BaseModel):
     hand: List[int]  # Карты в руке (нейросети)
     desk: Tuple[List[int], List[int | None]]  # Карты на столе
     known_cards: List[int]  # Карты, которые забрал противник (игрок)
-    count_player_cards: int  # Сколько карт в руке у оппонента
+    count_opponent_cards: int  # Сколько карт в руке у оппонента
     bat: List[int]  # Бито
     trump: int  # Козырная карта
     step: Step  # Тип хода
-    player_take_mode: bool
+    opponent_take_mode: bool  # Берет
 

@@ -81,7 +81,7 @@ def create_state_from_model(model: StateModel) -> State:
     state.opponent_cards = {Card(x, 9) for x in model.known_cards}
     state.trump = Card(model.trump, 9)
     state.bat = {Card(x, 9) for x in model.bat}
-    state.opponent_take_mode = model.player_take_mode
+    state.opponent_take_mode = model.opponent_take_mode
     state.player_take_mode = False
     state.desk = ([Card(x, 9) for x in model.desk[0]],
                   [Card(x, 9) for x in model.desk[1] if x])
@@ -97,9 +97,9 @@ def create_state_from_model(model: StateModel) -> State:
     )
 
     # Если оставшийся пул карт меньше, чем у оппонента, то рандомим ему карты
-    if model.count_player_cards < len(pull_cards):
+    if model.count_opponent_cards < len(pull_cards):
         pull_cards.discard(state.trump)  # Козырь переходит в колоду
-        for _ in range(model.count_player_cards - len(state.opponent_cards)):
+        for _ in range(model.count_opponent_cards - len(state.opponent_cards)):
             card = random.choice(list(pull_cards))
             state.opponent_cards.add(card)
             pull_cards.discard(card)
